@@ -48,29 +48,65 @@ async function renderFavorites(roomId) {
       <div><h3>Sai</h3>${renderPosterGrid(saiFavs)}</div>
     </div>
     <div style="margin-top:1rem;">
-      <input id="fav-input" placeholder="Add a movie or show you love..." style="padding:0.5rem; border-radius:1rem; border:none; width:60%;" />
-      <button id="fav-add-btn" class="start-btn">Add</button>
+      <input id="fav-input" placeholder="Search for a movie..." style="padding:0.5rem; border-radius:1rem; border:none; width:60%;" autocomplete="off" />
+      <div id="fav-suggestions" style="background:rgba(255,255,255,0.9); border-radius:1rem; box-shadow:0 2px 8px rgba(0,0,0,0.08); position:relative; z-index:10;"></div>
     </div>
   `;
-  document.getElementById('fav-add-btn').onclick = async () => {
-    const query = document.getElementById('fav-input').value;
-    if (!query) return;
-    // For demo, just add a dummy favorite (replace with TMDB search modal in production)
-    await addFavorite(roomId, sessionStorage.getItem('role'), { id: Date.now(), title: query, media_type: 'movie', poster_path: '', vote_average: 10 });
-    renderFavorites(roomId);
-  };
+  const input = document.getElementById('fav-input');
+  const suggestions = document.getElementById('fav-suggestions');
+  let lastQuery = '';
+  input.addEventListener('input', async (e) => {
+    const query = input.value.trim();
+    if (!query || query === lastQuery) {
+      suggestions.innerHTML = '';
+      return;
+    }
+    lastQuery = query;
+    suggestions.innerHTML = '<div style="padding:0.5rem;">Searching...</div>';
+    try {
+      const { results } = await import('./tmdb.js').then(m => m.searchTMDB(query, 'movie'));
+      if (!results || !results.length) {
+        suggestions.innerHTML = '<div style="padding:0.5rem; color:#c00;">No movies found.</div>';
+        return;
+      }
+      suggestions.innerHTML = results.slice(0,6).map(movie => `
+        <div class="fav-suggestion" style="padding:0.5rem; cursor:pointer; display:flex; align-items:center; gap:1rem;" data-id="${movie.id}" data-title="${movie.title}" data-poster="${movie.poster_path}" data-vote="${movie.vote_average}">
+          <img src="https://image.tmdb.org/t/p/w92${movie.poster_path}" style="width:32px; height:48px; object-fit:cover; border-radius:0.5rem;" />
+          <span>${movie.title} (${movie.release_date ? movie.release_date.slice(0,4) : ''})</span>
+        </div>
+      `).join('');
+      Array.from(document.getElementsByClassName('fav-suggestion')).forEach(el => {
+        el.onclick = async () => {
+          const id = el.getAttribute('data-id');
+          const title = el.getAttribute('data-title');
+          const poster = el.getAttribute('data-poster');
+          const vote = el.getAttribute('data-vote');
+          await addFavorite(roomId, sessionStorage.getItem('role'), {
+            media_id: id,
+            title,
+            media_type: 'movie',
+            poster_path: poster,
+            vote_average: vote
+          });
+          input.value = '';
+          suggestions.innerHTML = '';
+          renderFavorites(roomId);
+        };
+      });
+    } catch (err) {
+      suggestions.innerHTML = '<div style="padding:0.5rem; color:#c00;">Error searching TMDB.</div>';
+    }
+  });
 }
 
 function renderPosterGrid(items) {
   if (!items.length) return '<div style="opacity:0.5;">No favorites yet</div>';
-  return `<div style="display:flex; gap:1rem; flex-wrap:wrap;">${items.map(item => `
-    <div class="poster-card" style="background:rgba(255,255,255,0.2); border-radius:1rem; box-shadow:0 2px 16px #ffb6b9; padding:0.5rem; width:120px;">
-      <div style="height:180px; background:#eee; border-radius:1rem; margin-bottom:0.5rem; overflow:hidden;">
-        ${item.poster ? `<img src="https://image.tmdb.org/t/p/w200${item.poster}" alt="${item.title}" style="width:100%;height:100%;object-fit:cover;" />` : '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#ccc;">No Image</div>'}
-      </div>
-      <div style="font-weight:bold;">${item.title}</div>
-      <div style="font-size:0.9em; color:#cdb4f6;">${item.media_type}</div>
-      <div style="font-size:0.9em; color:#b8f2e6;">⭐ ${item.rating || ''}</div>
+  return `<div class="poster-grid">${items.map(item => `
+    <div class="poster-card">
+      ${item.poster ? `<img src="https://image.tmdb.org/t/p/w300${item.poster}" alt="${item.title}" />` : '<div class="no-image">No Image</div>'}
+      <div class="card-title">${item.title}</div>
+      <div class="card-type">${item.media_type}</div>
+      <div class="card-rating">${item.rating ? `⭐ ${item.rating}` : ''}</div>
     </div>
   `).join('')}</div>`;
 }

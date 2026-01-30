@@ -6,8 +6,8 @@ export function renderRoleSelection(onSelect) {
       <div class="gradient-title">Who are you today?</div>
       <div class="subtitle">Choose your role to enter our cozy space</div>
       <div style="display:flex; gap:2rem; justify-content:center; margin:2rem 0;">
-        <button class="role-btn" data-role="You">You</button>
-        <button class="role-btn" data-role="Sai">Sai</button>
+        <button class="role-btn" data-role="Dherru">Dherru</button>
+        <button class="role-btn" data-role="Nivi">Nivi</button>
       </div>
     </div>
   `;
