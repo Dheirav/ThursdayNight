@@ -1,0 +1,124 @@
+/* Sai’s Thursday – Vibrant, romantic, glassmorphism UI */
+:root {
+  --primary-gradient: linear-gradient(135deg, #ffb6b9 0%, #fcdffb 100%);
+  --accent-glow: 0 0 16px 4px #ffb6b9, 0 0 32px 8px #fcdffb;
+  --glass-bg: rgba(255, 255, 255, 0.25);
+  --glass-blur: blur(16px);
+  --romantic-pink: #ffb6b9;
+  --romantic-purple: #cdb4f6;
+  --romantic-yellow: #fff6b7;
+  --romantic-blue: #a7c7e7;
+  --romantic-green: #b8f2e6;
+  --text-dark: #2d2d2d;
+  --text-light: #fff;
+  --card-radius: 2rem;
+  --transition: 0.3s cubic-bezier(.4,2,.6,1);
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+  background: var(--primary-gradient);
+  color: var(--text-dark);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow-x: hidden;
+  transition: background var(--transition);
+}
+
+#root {
+  width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.glass-panel {
+  background: var(--glass-bg);
+  box-shadow: var(--accent-glow);
+  border-radius: var(--card-radius);
+  backdrop-filter: var(--glass-blur);
+  padding: 2rem;
+  margin: 2rem 0;
+  transition: box-shadow var(--transition), background var(--transition);
+}
+
+.gradient-title {
+  font-size: 3rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, #ffb6b9, #cdb4f6, #fff6b7, #a7c7e7, #b8f2e6);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.05em;
+  text-shadow: 0 2px 16px #fff6b7;
+  animation: glowTitle 2s infinite alternate;
+}
+
+@keyframes glowTitle {
+  from { text-shadow: 0 2px 16px #fff6b7; }
+  to { text-shadow: 0 2px 32px #ffb6b9, 0 2px 32px #cdb4f6; }
+}
+
+.subtitle {
+  font-size: 1.3rem;
+  color: #cdb4f6;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-weight: 500;
+}
+
+/* Poster card grid styles */
+.poster-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  box-shadow: 0 2px 16px #ffb6b9, 0 0 8px #fff6b7;
+  background: rgba(255,255,255,0.15);
+  border-radius: 1rem;
+  overflow: hidden;
+  position: relative;
+}
+.poster-card:hover {
+  transform: scale(1.05) rotate(-2deg);
+  box-shadow: 0 4px 32px #cdb4f6, 0 0 16px #ffb6b9;
+}
+
+.start-btn, .role-btn {
+  background: linear-gradient(90deg, #ffb6b9, #cdb4f6, #fff6b7);
+  color: #fff;
+  border: none;
+  border-radius: 2rem;
+  padding: 0.7rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  box-shadow: 0 2px 16px #ffb6b9;
+  cursor: pointer;
+  margin: 0 0.5rem;
+  transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+}
+.start-btn:hover, .role-btn:hover {
+  background: linear-gradient(90deg, #fff6b7, #ffb6b9, #cdb4f6);
+  box-shadow: 0 4px 32px #cdb4f6;
+  transform: scale(1.07);
+}
+
+.countdown {
+  font-size: 1.3rem;
+  color: #fff6b7;
+  text-shadow: 0 0 8px #fff6b7, 0 0 16px #ffb6b9;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+@keyframes glowReveal {
+  from { box-shadow: 0 0 0 #ffb6b9; }
+  to { box-shadow: 0 0 32px #ffb6b9, 0 0 16px #fff6b7; }
+}
