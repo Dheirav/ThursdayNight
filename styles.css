@@ -16,12 +16,13 @@
 }
 
 
+
 body {
   min-height: 100vh;
   margin: 0;
   font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
   background: #181818;
-  color: #fff;
+  color: #f5f5f5;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -40,14 +41,17 @@ body {
 }
 
 
+
 .glass-panel {
-  background: rgba(40,40,40,0.85);
-  box-shadow: 0 4px 32px #000a, 0 0 16px #222a;
+  background: rgba(32,32,32,0.95);
+  box-shadow: 0 4px 32px #000a, 0 0 16px #e50914;
   border-radius: var(--card-radius);
   padding: 2rem;
   margin: 2rem 0;
+  color: #f5f5f5;
   transition: box-shadow var(--transition), background var(--transition);
 }
+
 
 
 .gradient-title {
@@ -60,7 +64,7 @@ body {
   text-align: center;
   margin-bottom: 0.5rem;
   letter-spacing: 0.05em;
-  text-shadow: 0 2px 16px #e50914;
+  text-shadow: 0 2px 24px #e50914, 0 2px 32px #fff;
   animation: glowTitle 2s infinite alternate;
 }
 
@@ -70,78 +74,87 @@ body {
 }
 
 
+
 .subtitle {
   font-size: 1.3rem;
-  color: #b8b8b8;
+  color: #f5f5f5;
   text-align: center;
   margin-bottom: 2rem;
   font-weight: 500;
+  text-shadow: 0 2px 8px #222;
 }
 
 /* Poster card grid styles */
 
+
 .poster-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 2.5rem;
   width: 100%;
   margin: 2rem 0;
 }
 
+
 .poster-card {
   transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
-  box-shadow: 0 2px 16px #222a, 0 0 8px #e50914;
-  background: #222;
+  box-shadow: 0 2px 16px #111a, 0 0 8px #e50914;
+  background: #232323;
   border-radius: 1rem;
   overflow: hidden;
   position: relative;
-  width: 160px;
-  min-height: 260px;
+  width: 180px;
+  min-height: 270px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
 }
 .poster-card:hover {
-  transform: scale(1.07) translateY(-8px);
-  box-shadow: 0 8px 32px #e50914, 0 0 24px #fff2;
+  transform: scale(1.09) translateY(-10px);
+  box-shadow: 0 12px 40px #e50914, 0 0 32px #fff3;
   z-index: 2;
 }
 .poster-card img {
   width: 100%;
-  height: 220px;
+  height: 230px;
   object-fit: cover;
   border-radius: 1rem 1rem 0 0;
   background: #333;
 }
 .poster-card .no-image {
-  height: 220px;
+  height: 230px;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #888;
+  color: #bbb;
   background: #333;
   border-radius: 1rem 1rem 0 0;
 }
 .poster-card .card-title {
   font-weight: bold;
-  font-size: 1.1em;
-  color: #fff;
-  margin: 0.5rem 0 0.2rem 0;
+  font-size: 1.15em;
+  color: #f5f5f5;
+  margin: 0.7rem 0 0.2rem 0;
   text-align: center;
+  text-shadow: 0 2px 8px #111;
 }
 .poster-card .card-type {
-  font-size: 0.9em;
-  color: #b8b8b8;
+  font-size: 0.95em;
+  color: #e50914;
   margin-bottom: 0.2rem;
+  text-align: center;
 }
 .poster-card .card-rating {
-  font-size: 0.9em;
-  color: #e50914;
+  font-size: 0.95em;
+  color: #fff;
   margin-bottom: 0.5rem;
+  text-align: center;
+  text-shadow: 0 2px 8px #e50914;
 }
+
 
 
 .start-btn, .role-btn {
@@ -156,17 +169,19 @@ body {
   cursor: pointer;
   margin: 0 0.5rem;
   transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+  text-shadow: 0 2px 8px #111;
 }
 .start-btn:hover, .role-btn:hover {
   background: linear-gradient(90deg, #b81d24, #e50914);
   box-shadow: 0 4px 32px #e50914;
-  transform: scale(1.09);
+  transform: scale(1.11);
 }
+
 
 
 .countdown {
   font-size: 1.3rem;
-  color: #e50914;
+  color: #fff;
   text-shadow: 0 0 8px #e50914, 0 0 16px #fff;
   margin-bottom: 1.5rem;
   font-weight: 600;
