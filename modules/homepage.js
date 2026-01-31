@@ -123,6 +123,25 @@ async function renderVotes(roomId){
   try { observeLazyImages(container); } catch(e) { }
 }
 
+// render timeline dots (vertical) with hover titles
+async function renderTimelineDots(roomId){
+  const dots = document.getElementById('timeline-dots'); if (!dots) return;
+  dots.innerHTML = '';
+  try{
+    const memories = await getMemories(roomId);
+    if (!memories || memories.length===0){
+      const e = document.createElement('div'); e.className='empty-delight'; e.innerHTML=`<img src="assets/empty-popcorn.svg" alt="empty"/><div>No timeline yet</div>`; dots.appendChild(e); return;
+    }
+    memories.slice(0,12).forEach(m => {
+      const d = document.createElement('div'); d.className='timeline-dot';
+      const title = `${m.title || m.name || 'Movie'} — ${new Date(m.date).toLocaleDateString()}\n${m.notes || ''}`;
+      d.setAttribute('data-title', title);
+      d.onclick = ()=>{ document.querySelectorAll('.timeline-dot').forEach(x=>x.classList.remove('active')); d.classList.add('active'); };
+      dots.appendChild(d);
+    });
+  }catch(err){ console.warn('renderTimelineDots', err); }
+}
+
 async function renderTimeline(roomId){
   const memories = await getMemories(roomId);
   const container = el('timeline-grid'); if (!container) return;
@@ -137,6 +156,30 @@ async function renderTimeline(roomId){
     container.appendChild(item);
   });
   try { observeLazyImages(container); } catch(e) { }
+}
+
+// render hero into #final-hero and update countdown large element
+async function renderHeroFeatured(roomId, role){
+  const recs = await getPersonalizedRecommendations(roomId, role);
+  const favs = await getFavorites(roomId, role);
+  const featured = pickFeatured([...recs, ...favs]) || (recs[0] || favs[0] || null);
+  const final = document.getElementById('final-hero'); if (!final) return;
+  if (featured){
+    const poster = featured.poster_path || featured.poster || '';
+    final.innerHTML = `<div class="final-hero-content">
+        <img class="final-hero-poster" src="https://image.tmdb.org/t/p/w780${poster}" alt="${featured.title||featured.name}" />
+        <div class="final-hero-meta">
+          <h2 style="margin:0 0 0.4rem 0;">${featured.title||featured.name}</h2>
+          <div class="muted">${(featured.release_date||featured.first_air_date||'').slice(0,10)}</div>
+          <p class="muted">${(featured.overview||'').slice(0,220)}</p>
+        </div>
+      </div>`;
+    // breathing glow is handled by CSS animation
+  } else {
+    final.innerHTML = `<div class="empty-delight"><img src="assets/empty-popcorn.svg" alt="empty"><div>No featured pick yet</div></div>`;
+  }
+  // big countdown element
+  const c = document.querySelector('.countdown-timer'); if (c) c.classList.add('large-count');
 }
 
 async function renderRomanticSection(roomId, role){
@@ -189,82 +232,150 @@ export async function initHomepage(roomId='demo-room'){
     return;
   }
   root.innerHTML = `
-    <header class="hero main-title"> 
-      <div class="hero-inner">
-        <div class="main-brand">Dherru & Nivi</div>
-        <div class="main-user"></div>
-        <div class="countdown-timer"></div>
-      </div>
-    </header>
-    <main class="three-col-grid">
-      <div class="col col-left">
-        <div class="block">
-          <h3>Dherru's Favorites</h3>
-          <div id="user-favorites-grid" class="poster-grid"></div>
+    <section class="bento-wrapper">
+      <div class="bento-grid">
+        <div class="bento-hero block">
+          <div class="hero-top">
+            <h3>Tonight</h3>
+            <div class="countdown-timer large-count"></div>
+          </div>
+          <div id="final-hero" class="final-hero-content"></div>
         </div>
-        <div class="block">
-          <h3>Nivi's Favorites</h3>
-          <div id="nivi-favorites-grid" class="poster-grid"></div>
-        </div>
-      </div>
 
-      <div class="col col-center">
-        <div class="block">
-          <h3>Recommendations</h3>
-          <div id="recommendations-grid" class="poster-grid"></div>
+        <div class="bento-action block">
+          <h3>Smart Search</h3>
+          <div class="search-panel" style="margin-top:0.4rem;">
+            <input id="global-search" class="search-large" placeholder="Search movies, mood, genre or runtime" aria-label="Smart Search" />
+            <div class="chips" id="quick-chips"></div>
+            <div class="range-row" style="margin-top:0.6rem;">
+              <input type="range" id="year-range" class="year-range" min="1950" max="2026" value="2000" />
+              <div style="width:100px; text-align:right; color:var(--muted); font-weight:600;">Year ≤ <span id="year-label">2000</span></div>
+            </div>
+            <div id="global-suggestions" class="suggestions" style="margin-top:0.6rem;"></div>
+          </div>
         </div>
-        <div class="block">
-          <h3>Final Picks</h3>
+
+        <div class="bento-wide block">
+          <h3>Tonight's Final Picks</h3>
           <div id="final-picks-grid" class="poster-grid"></div>
         </div>
-      </div>
 
-      <div class="col col-right">
-          <div class="block search-panel">
-            <h3>Search</h3>
-            <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.6rem;">
-              <input id="global-search" placeholder="Search movies or shows" aria-label="Search movies" style="flex:1;" />
-              <select id="global-type" title="Filter type" class="search-select">
-                <option value="movie">Movies</option>
-                <option value="tv">TV Shows</option>
-                <option value="multi">All</option>
-              </select>
-            </div>
-            <div style="display:flex; gap:0.5rem; margin-bottom:0.6rem; align-items:center;">
-              <input id="year-from" placeholder="Year from" style="width:90px; padding:0.4rem; border-radius:8px;" />
-              <input id="year-to" placeholder="Year to" style="width:90px; padding:0.4rem; border-radius:8px;" />
-              <select id="global-sort" class="search-select" style="margin-left:auto;">
-                <option value="newest">Newest</option>
-                <option value="oldest">Oldest</option>
-                <option value="rating">Rating</option>
-                <option value="popularity">Popularity</option>
-              </select>
-            </div>
-            <div style="font-size:0.85rem; color:rgba(255,255,255,0.65); margin-bottom:0.5rem;">Search results: filtered by year range and sorted (default: newest first)</div>
-            <div id="global-suggestions" class="suggestions"></div>
+        <div class="bento-small-wrap">
+          <div class="bento-small block">
+            <h4>Archive</h4>
+            <div id="archive-grid" class="poster-grid small-grid"></div>
           </div>
-        <div class="block">
-          <h3>Timeline</h3>
-          <div id="timeline-grid" class="timeline-grid"></div>
+          <div class="bento-small block">
+            <h4>Last Week</h4>
+            <div id="lastweek-grid" class="poster-grid small-grid"></div>
+          </div>
+          <div class="bento-small block">
+            <h4>Film Strip</h4>
+            <div id="film-strip" class="film-strip"></div>
+          </div>
+          <div class="bento-small block">
+            <h4>Controls</h4>
+            <div id="timeline-dots" class="timeline-dots"></div>
+          </div>
         </div>
-        <aside id="romantic-panel"></aside>
       </div>
-    </main>
+    </section>
+    <div id="control-sidebar" class="control-sidebar" aria-hidden="false">
+      <div id="role-toggle-dh" class="sidebar-toggle" title="Dherru">D</div>
+      <div id="role-toggle-ni" class="sidebar-toggle" title="Nivi">N</div>
+    </div>
   `;
 
   renderRoleSwitcher(role);
   renderCountdown();
-  // attach global search handler
-  const searchInput = document.getElementById('global-search');
-  const suggestions = document.getElementById('global-suggestions');
-  if (searchInput && suggestions) {
-    // detail modal helper (shows details and allows adding to favorites)
-    function showDetailModal(details, mediaType){
-      try{
-        const existing = document.getElementById('detail-modal');
-        let modal = existing;
+  // application state: 'discovery' or 'selection'
+  let appState = 'discovery';
+  function setAppState(s){
+    appState = s;
+    document.body.classList.toggle('app-discovery', s === 'discovery');
+    // when selection, ensure search shrinks and film strip shows
+    const film = document.getElementById('film-strip');
+    const searchPanel = document.querySelector('.search-panel');
+    if (s === 'selection'){
+      if (film) film.style.display = 'flex';
+      if (searchPanel) searchPanel.classList.add('search-small');
+      document.body.classList.add('state-selection'); document.body.classList.remove('state-discovery');
+    } else {
+      if (film) film.style.display = 'none';
+      if (searchPanel) searchPanel.classList.remove('search-small');
+      document.body.classList.add('state-discovery'); document.body.classList.remove('state-selection');
+    }
+  }
+
+  // render film strip from favorites
+  async function renderFilmStrip(){
+    const strip = document.getElementById('film-strip'); if (!strip) return;
+    strip.innerHTML = '';
+    const allFavs = [ ...(await getFavorites(roomId, 'Dherru')), ...(await getFavorites(roomId, 'Nivi')) ];
+    if (!allFavs.length){ strip.innerHTML = '<div class="empty-delight"><img src="assets/empty-popcorn.svg" alt="empty" /><div>No picks yet</div></div>'; return; }
+    memories.slice(0,12).forEach(m => {
+      const d = document.createElement('div'); d.className='timeline-dot';
+      const title = `${m.title || m.name || 'Movie'} — ${new Date(m.date).toLocaleDateString()}\n${m.notes || ''}`;
+      d.setAttribute('data-title', title);
+      // show mini-card on hover and open details on click
+      d.onmouseenter = (ev) => showMiniCard(ev.currentTarget, m);
+      d.onmouseleave = (ev) => hideMiniCard();
+      d.onclick = async ()=>{
+        document.querySelectorAll('.timeline-dot').forEach(x=>x.classList.remove('active'));
+        d.classList.add('active');
+        // try to open TMDB details if we have media id
+        try{
+          const mediaId = m.media_id || m.id;
+          const mediaType = m.media_type || 'movie';
+          if (mediaId) {
+            const details = await import('./tmdb.js').then(mod => mod.getTMDBDetails(mediaId, mediaType));
+            showDetailModal(details, mediaType);
+          }
+        }catch(err){ console.warn('timeline dot open failed', err); }
+      };
+      dots.appendChild(d);
+    });
         if (!modal){
           modal = document.createElement('div'); modal.id='detail-modal'; modal.className='detail-modal';
+
+let _miniCardEl = null;
+function showMiniCard(targetDot, memory){
+  hideMiniCard();
+  try{
+    _miniCardEl = document.createElement('div'); _miniCardEl.className='mini-card';
+    _miniCardEl.innerHTML = `<div class="mini-poster"><img src="${memory.poster_path ? 'https://image.tmdb.org/t/p/w200'+memory.poster_path : 'assets/empty-popcorn.svg'}"/></div>
+      <div class="mini-body"><strong>${memory.title||memory.name}</strong><div class="muted small">${new Date(memory.date).toLocaleDateString()}</div><div class="mini-snippet">${(memory.notes||'').slice(0,140)}</div></div>`;
+    document.body.appendChild(_miniCardEl);
+    const r = targetDot.getBoundingClientRect();
+    // position left of dot if near right edge
+    const left = Math.max(12, r.left - 220);
+    _miniCardEl.style.position='absolute'; _miniCardEl.style.left = `${left}px`; _miniCardEl.style.top = `${r.top - 8}px`;
+  }catch(e){ console.warn('showMiniCard', e); }
+}
+function hideMiniCard(){ if (_miniCardEl){ _miniCardEl.remove(); _miniCardEl = null; } }
+
+// Smooth JS-driven transitions (using Web Animations API)
+async function animateToSelection(){
+  const searchPanel = document.querySelector('.search-panel');
+  const bento = document.querySelector('.bento-grid');
+  const film = document.getElementById('film-strip');
+  const anims = [];
+  if (searchPanel){ anims.push(searchPanel.animate([{ transform: 'scale(1)' }, { transform: 'scale(0.86)' }], { duration: 420, easing: 'cubic-bezier(.2,.9,.2,1)', fill: 'forwards' })); }
+  if (bento){ anims.push(bento.animate([{ transform: 'translateY(8px)', opacity: 0.96 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 420, easing: 'ease-out', fill: 'forwards' })); }
+  if (film) { film.style.display='flex'; anims.push(film.animate([{ opacity:0, transform:'translateY(8px)' }, { opacity:1, transform:'translateY(0)' }], { duration:360, easing:'ease-out', fill:'forwards' })); }
+  try{ await Promise.all(anims.map(a=>a.finished)); }catch(e){}
+}
+
+async function animateToDiscovery(){
+  const searchPanel = document.querySelector('.search-panel');
+  const bento = document.querySelector('.bento-grid');
+  const film = document.getElementById('film-strip');
+  const anims = [];
+  if (searchPanel){ anims.push(searchPanel.animate([{ transform: 'scale(0.86)' }, { transform: 'scale(1)' }], { duration: 420, easing: 'cubic-bezier(.2,.9,.2,1)', fill: 'forwards' })); }
+  if (bento){ anims.push(bento.animate([{ transform: 'translateY(0)', opacity:1 }, { transform: 'translateY(8px)', opacity:0.94 }], { duration: 420, easing: 'ease-in', fill: 'forwards' })); }
+  if (film) { anims.push(film.animate([{ opacity:1, transform:'translateY(0)' }, { opacity:0, transform:'translateY(8px)' }], { duration:300, easing:'ease-in', fill:'forwards' })); }
+  try{ await Promise.all(anims.map(a=>a.finished)); if (film) film.style.display='none'; }catch(e){}
+}
           modal.innerHTML = `
             <div class="detail-backdrop" id="detail-backdrop"></div>
             <div class="detail-card" id="detail-card">
@@ -366,7 +477,9 @@ export async function initHomepage(roomId='demo-room'){
       }catch(err){ suggestions.innerHTML = '<div class="muted">Search failed</div>'; }
     }
     const deb = debounce(doSearch, 350);
-    searchInput.addEventListener('input', e=> deb(e.target.value));
+    searchInput.addEventListener('input', e=>{ deb(e.target.value); if (e.target.value && e.target.value.trim().length>0) setAppState('selection'); else setAppState('discovery'); });
+    // focus behavior: discovery view when empty
+    searchInput.addEventListener('focus', ()=>{ if (!searchInput.value) setAppState('discovery'); });
   }
   // show skeletons while loading
   showSkeleton('user-favorites-grid',4);
@@ -378,6 +491,7 @@ export async function initHomepage(roomId='demo-room'){
   await renderHeroFeatured(roomId, role);
   const userFavs = await getFavorites(roomId, role);
   await renderPosterGrid('user-favorites-grid', userFavs, {type:'Favorite'});
+  await renderFilmStrip();
   const partner = role === 'Dherru' ? 'Nivi' : 'Dherru';
   const niviFavs = await getFavorites(roomId, partner);
   await renderPosterGrid('nivi-favorites-grid', niviFavs, {type:"Nivi's Pick"});
@@ -385,7 +499,10 @@ export async function initHomepage(roomId='demo-room'){
   await renderPosterGrid('recommendations-grid', recs, {type:'Recommended'});
   await renderVotes(roomId);
   await renderTimeline(roomId);
+  await renderTimelineDots(roomId);
   await renderRomanticSection(roomId, role);
+  // choose initial app state: discovery if no favorites, else selection
+  if ((userFavs && userFavs.length>0) || (niviFavs && niviFavs.length>0)) setAppState('selection'); else setAppState('discovery');
 }
 
 // Auto-run for the page
