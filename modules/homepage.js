@@ -224,7 +224,7 @@ export async function initHomepage(roomId='demo-room'){
             <h3>Search</h3>
             <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.6rem;">
               <input id="global-search" placeholder="Search movies or shows" aria-label="Search movies" style="flex:1;" />
-              <select id="global-type" title="Filter type" style="border-radius:8px; padding:0.4rem; background:transparent; color:#fff; border:1px solid rgba(255,255,255,0.06);">
+              <select id="global-type" title="Filter type" class="search-select">
                 <option value="movie">Movies</option>
                 <option value="tv">TV Shows</option>
                 <option value="multi">All</option>
@@ -233,7 +233,7 @@ export async function initHomepage(roomId='demo-room'){
             <div style="display:flex; gap:0.5rem; margin-bottom:0.6rem; align-items:center;">
               <input id="year-from" placeholder="Year from" style="width:90px; padding:0.4rem; border-radius:8px;" />
               <input id="year-to" placeholder="Year to" style="width:90px; padding:0.4rem; border-radius:8px;" />
-              <select id="global-sort" style="margin-left:auto; border-radius:8px; padding:0.4rem;">
+              <select id="global-sort" class="search-select" style="margin-left:auto;">
                 <option value="newest">Newest</option>
                 <option value="oldest">Oldest</option>
                 <option value="rating">Rating</option>
