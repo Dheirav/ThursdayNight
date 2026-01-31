@@ -296,7 +296,15 @@ export async function initHomepage(roomId='demo-room'){
         modal.querySelector('#close-modal').onclick = closeModal;
         modal.querySelector('#add-favorite-from-modal').onclick = async ()=>{
           const role = sessionStorage.getItem('role') || 'Dherru';
-          try{ await import('./favorites.js').then(m => m.addFavorite('demo-room', role, { media_id: details.id, title: details.title||details.name, media_type: mediaType, poster_path: details.poster_path })); }catch(e){ console.warn('addFavorite failed', e); }
+          try{
+            const favModule = await import('./favorites.js');
+            const res = await favModule.addFavorite('demo-room', role, { media_id: details.id, title: details.title||details.name, media_type: mediaType, poster_path: details.poster_path });
+            // show toast based on result
+            try{ const toast = await import('./toast.js');
+              if (res && res.error) toast.showToast('Failed to add favorite', 'error');
+              else toast.showToast('Added to favorites', 'success');
+            }catch(e){ /* ignore toast failures */ }
+          }catch(e){ console.warn('addFavorite failed', e); try{ (await import('./toast.js')).showToast('Failed to add favorite', 'error'); }catch(_){} }
           try{ await renderPosterGrid('user-favorites-grid', await getFavorites('demo-room', 'Dherru'), {type:'Favorite'}); }catch(e){}
           try{ await renderPosterGrid('nivi-favorites-grid', await getFavorites('demo-room', 'Nivi'), {type:"Nivi's Pick"}); }catch(e){}
           closeModal();
