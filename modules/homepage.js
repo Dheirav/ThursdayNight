@@ -166,7 +166,7 @@ function renderRoleSwitcher(currentRole='Dherru'){
     headerUser.appendChild(btn);
   });
   // small avatar at end
-  const avatar = document.createElement('img'); avatar.src='assets/user1.png'; avatar.className='user-avatar'; avatar.alt='You';
+  const avatar = document.createElement('img'); avatar.src='assets/user1.svg'; avatar.className='user-avatar'; avatar.alt='You';
   headerUser.appendChild(avatar);
 }
 

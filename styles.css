@@ -2,7 +2,7 @@
 .main-hero-bg {
   position: fixed;
   top: 0; left: 0; width: 100vw; height: 100vh;
-  background: radial-gradient(ellipse at top left, #ffb6b9 0%, #cdb4f6 60%, #181818 100%), url('assets/hearts-bg.png');
+  background: radial-gradient(ellipse at top left, #ffb6b9 0%, #cdb4f6 60%, #181818 100%), url('assets/hearts-bg.svg');
   background-size: cover;
   z-index: 0;
 }
