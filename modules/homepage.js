@@ -196,33 +196,79 @@ export async function initHomepage(roomId='demo-room'){
         <div class="countdown-timer"></div>
       </div>
     </header>
-    <main class="container">
-      <section class="row">
-        <h2>Your Favorites</h2>
-        <div id="user-favorites-grid" class="poster-grid"></div>
-      </section>
-      <section class="row">
-        <h2>Nivi's Favorites</h2>
-        <div id="nivi-favorites-grid" class="poster-grid"></div>
-      </section>
-      <section class="row">
-        <h2>Recommendations</h2>
-        <div id="recommendations-grid" class="poster-grid"></div>
-      </section>
-      <section class="row">
-        <h2>Final Picks</h2>
-        <div id="final-picks-grid" class="poster-grid"></div>
-      </section>
-      <section class="row">
-        <h2>Timeline</h2>
-        <div id="timeline-grid" class="timeline-grid"></div>
-      </section>
-      <aside id="romantic-panel"></aside>
+    <main class="three-col-grid">
+      <div class="col col-left">
+        <div class="block">
+          <h3>Dherru's Favorites</h3>
+          <div id="user-favorites-grid" class="poster-grid"></div>
+        </div>
+        <div class="block">
+          <h3>Nivi's Favorites</h3>
+          <div id="nivi-favorites-grid" class="poster-grid"></div>
+        </div>
+      </div>
+
+      <div class="col col-center">
+        <div class="block">
+          <h3>Recommendations</h3>
+          <div id="recommendations-grid" class="poster-grid"></div>
+        </div>
+        <div class="block">
+          <h3>Final Picks</h3>
+          <div id="final-picks-grid" class="poster-grid"></div>
+        </div>
+      </div>
+
+      <div class="col col-right">
+        <div class="block search-panel">
+          <h3>Search</h3>
+          <input id="global-search" placeholder="Search movies or shows" aria-label="Search movies" />
+          <div id="global-suggestions" class="suggestions"></div>
+        </div>
+        <div class="block">
+          <h3>Timeline</h3>
+          <div id="timeline-grid" class="timeline-grid"></div>
+        </div>
+        <aside id="romantic-panel"></aside>
+      </div>
     </main>
   `;
 
   renderRoleSwitcher(role);
   renderCountdown();
+  // attach global search handler
+  const searchInput = document.getElementById('global-search');
+  const suggestions = document.getElementById('global-suggestions');
+  if (searchInput && suggestions) {
+    function debounce(fn, wait=300){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), wait); }; }
+    async function doSearch(q){
+      const query = (q||'').trim();
+      if (!query){ suggestions.innerHTML=''; return; }
+      suggestions.innerHTML = '<div class="mini-spinner"></div>';
+      try{
+        const { results } = await import('./tmdb.js').then(m => m.searchTMDB(query, 'movie'));
+        if (!results || !results.length){ suggestions.innerHTML = '<div class="muted">No results</div>'; return; }
+        suggestions.innerHTML = results.slice(0,8).map(r => `
+          <div class="suggest-item" data-id="${r.id}">
+            <img class="lazy-img" data-src="https://image.tmdb.org/t/p/w92${r.poster_path || ''}" />
+            <div class="sugg-meta"><strong>${r.title || r.name}</strong><br/><small>${r.release_date ? r.release_date.slice(0,4) : ''}</small></div>
+          </div>
+        `).join('');
+        try{ observeLazyImages(suggestions); }catch(e){}
+        Array.from(suggestions.querySelectorAll('.suggest-item')).forEach(el=> el.onclick = async ()=>{
+          const id = el.getAttribute('data-id');
+          // when user selects a suggestion, open details or add favorite — for now add to current role favorites
+          await import('./favorites.js').then(m => m.addFavorite('demo-room', sessionStorage.getItem('role') || 'Dherru', { media_id: id, title: el.querySelector('.sugg-meta strong').textContent, media_type: 'movie', poster_path: '' }));
+          // refresh favorites
+          await renderPosterGrid('user-favorites-grid', await getFavorites('demo-room', sessionStorage.getItem('role') || 'Dherru'), {type:'Favorite'});
+          suggestions.innerHTML = '';
+          searchInput.value = '';
+        });
+      }catch(err){ suggestions.innerHTML = '<div class="muted">Search failed</div>'; }
+    }
+    const deb = debounce(doSearch, 350);
+    searchInput.addEventListener('input', e=> deb(e.target.value));
+  }
   // show skeletons while loading
   showSkeleton('user-favorites-grid',4);
   showSkeleton('nivi-favorites-grid',4);
