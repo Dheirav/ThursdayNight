@@ -220,11 +220,29 @@ export async function initHomepage(roomId='demo-room'){
       </div>
 
       <div class="col col-right">
-        <div class="block search-panel">
-          <h3>Search</h3>
-          <input id="global-search" placeholder="Search movies or shows" aria-label="Search movies" />
-          <div id="global-suggestions" class="suggestions"></div>
-        </div>
+          <div class="block search-panel">
+            <h3>Search</h3>
+            <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.6rem;">
+              <input id="global-search" placeholder="Search movies or shows" aria-label="Search movies" style="flex:1;" />
+              <select id="global-type" title="Filter type" style="border-radius:8px; padding:0.4rem; background:transparent; color:#fff; border:1px solid rgba(255,255,255,0.06);">
+                <option value="movie">Movies</option>
+                <option value="tv">TV Shows</option>
+                <option value="multi">All</option>
+              </select>
+            </div>
+            <div style="display:flex; gap:0.5rem; margin-bottom:0.6rem; align-items:center;">
+              <input id="year-from" placeholder="Year from" style="width:90px; padding:0.4rem; border-radius:8px;" />
+              <input id="year-to" placeholder="Year to" style="width:90px; padding:0.4rem; border-radius:8px;" />
+              <select id="global-sort" style="margin-left:auto; border-radius:8px; padding:0.4rem;">
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="rating">Rating</option>
+                <option value="popularity">Popularity</option>
+              </select>
+            </div>
+            <div style="font-size:0.85rem; color:rgba(255,255,255,0.65); margin-bottom:0.5rem;">Search results: filtered by year range and sorted (default: newest first)</div>
+            <div id="global-suggestions" class="suggestions"></div>
+          </div>
         <div class="block">
           <h3>Timeline</h3>
           <div id="timeline-grid" class="timeline-grid"></div>
@@ -240,29 +258,102 @@ export async function initHomepage(roomId='demo-room'){
   const searchInput = document.getElementById('global-search');
   const suggestions = document.getElementById('global-suggestions');
   if (searchInput && suggestions) {
+    // detail modal helper (shows details and allows adding to favorites)
+    function showDetailModal(details, mediaType){
+      try{
+        const existing = document.getElementById('detail-modal');
+        let modal = existing;
+        if (!modal){
+          modal = document.createElement('div'); modal.id='detail-modal'; modal.className='detail-modal';
+          modal.innerHTML = `
+            <div class="detail-backdrop" id="detail-backdrop"></div>
+            <div class="detail-card" id="detail-card">
+              <button class="detail-close" id="detail-close">×</button>
+              <div id="detail-content">Loading…</div>
+            </div>
+          `;
+          document.body.appendChild(modal);
+        }
+        const content = modal.querySelector('#detail-content');
+        content.innerHTML = `
+          <div class="detail-header">
+            <img class="detail-poster" src="https://image.tmdb.org/t/p/w342${details.poster_path||''}" />
+            <div>
+              <h2>${details.title||details.name}</h2>
+              <p class="muted">${(details.release_date||details.first_air_date||'').slice(0,10)} • ${mediaType}</p>
+              <p class="muted small">${details.tagline||''}</p>
+            </div>
+          </div>
+          <div class="detail-overview">${details.overview||'No overview available.'}</div>
+          <div class="detail-actions">
+            <button id="add-favorite-from-modal" class="btn primary">Add to Favorites</button>
+            <button id="close-modal" class="btn ghost">Close</button>
+          </div>
+        `;
+        modal.style.display = 'block';
+        modal.querySelector('#detail-backdrop').onclick = closeModal;
+        modal.querySelector('#detail-close').onclick = closeModal;
+        modal.querySelector('#close-modal').onclick = closeModal;
+        modal.querySelector('#add-favorite-from-modal').onclick = async ()=>{
+          const role = sessionStorage.getItem('role') || 'Dherru';
+          try{ await import('./favorites.js').then(m => m.addFavorite('demo-room', role, { media_id: details.id, title: details.title||details.name, media_type: mediaType, poster_path: details.poster_path })); }catch(e){ console.warn('addFavorite failed', e); }
+          try{ await renderPosterGrid('user-favorites-grid', await getFavorites('demo-room', 'Dherru'), {type:'Favorite'}); }catch(e){}
+          try{ await renderPosterGrid('nivi-favorites-grid', await getFavorites('demo-room', 'Nivi'), {type:"Nivi's Pick"}); }catch(e){}
+          closeModal();
+        };
+        function closeModal(){ modal.style.display='none'; }
+      }catch(err){ console.warn('modal error',err); }
+    }
+
     function debounce(fn, wait=300){ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), wait); }; }
     async function doSearch(q){
       const query = (q||'').trim();
       if (!query){ suggestions.innerHTML=''; return; }
       suggestions.innerHTML = '<div class="mini-spinner"></div>';
       try{
-        const { results } = await import('./tmdb.js').then(m => m.searchTMDB(query, 'movie'));
+        const typeSelect = document.getElementById('global-type');
+        const typeParam = typeSelect ? typeSelect.value || 'movie' : 'movie';
+        const apiType = typeParam === 'multi' ? 'multi' : typeParam; // pass through
+        const yearFrom = parseInt(document.getElementById('year-from')?.value || '') || null;
+        const yearTo = parseInt(document.getElementById('year-to')?.value || '') || null;
+        const sortOrder = document.getElementById('global-sort')?.value || 'newest';
+
+        const { results } = await import('./tmdb.js').then(m => m.searchTMDB(query, apiType));
         if (!results || !results.length){ suggestions.innerHTML = '<div class="muted">No results</div>'; return; }
-        suggestions.innerHTML = results.slice(0,8).map(r => `
-          <div class="suggest-item" data-id="${r.id}">
-            <img class="lazy-img" data-src="https://image.tmdb.org/t/p/w92${r.poster_path || ''}" />
-            <div class="sugg-meta"><strong>${r.title || r.name}</strong><br/><small>${r.release_date ? r.release_date.slice(0,4) : ''}</small></div>
+
+        function getDateVal(r){ const d = r.release_date || r.first_air_date || ''; return d ? new Date(d).getTime() : 0; }
+        // filter by year range if provided
+        let filtered = results.filter(r => {
+          const year = (r.release_date || r.first_air_date || '').slice(0,4);
+          if (!year) return true;
+          const y = parseInt(year);
+          if (yearFrom && y < yearFrom) return false;
+          if (yearTo && y > yearTo) return false;
+          return true;
+        });
+
+        // sort according to sortOrder (only affects search results)
+        if (sortOrder === 'newest') filtered.sort((a,b) => getDateVal(b) - getDateVal(a));
+        else if (sortOrder === 'oldest') filtered.sort((a,b) => getDateVal(a) - getDateVal(b));
+        else if (sortOrder === 'rating') filtered.sort((a,b) => (b.vote_average||0) - (a.vote_average||0));
+        else if (sortOrder === 'popularity') filtered.sort((a,b) => (b.popularity||0) - (a.popularity||0));
+
+        suggestions.innerHTML = filtered.slice(0,12).map(r => `
+          <div class="suggest-item" data-id="${r.id}" data-type="${r.media_type || (apiType==='movie'?'movie':(apiType==='tv'?'tv':'mixed'))}">
+            <img class="lazy-img" data-src="https://image.tmdb.org/t/p/w92${r.poster_path || r.poster || r.backdrop_path || ''}" />
+            <div class="sugg-meta"><strong>${r.title || r.name}</strong><br/><small>${(r.release_date || r.first_air_date || '').slice(0,4)}</small></div>
           </div>
         `).join('');
         try{ observeLazyImages(suggestions); }catch(e){}
+
         Array.from(suggestions.querySelectorAll('.suggest-item')).forEach(el=> el.onclick = async ()=>{
           const id = el.getAttribute('data-id');
-          // when user selects a suggestion, open details or add favorite — for now add to current role favorites
-          await import('./favorites.js').then(m => m.addFavorite('demo-room', sessionStorage.getItem('role') || 'Dherru', { media_id: id, title: el.querySelector('.sugg-meta strong').textContent, media_type: 'movie', poster_path: '' }));
-          // refresh favorites
-          await renderPosterGrid('user-favorites-grid', await getFavorites('demo-room', sessionStorage.getItem('role') || 'Dherru'), {type:'Favorite'});
-          suggestions.innerHTML = '';
-          searchInput.value = '';
+          const mtype = el.getAttribute('data-type') || 'movie';
+          // open detail modal instead of auto-adding to favorites
+          try{
+            const details = await import('./tmdb.js').then(m => m.getTMDBDetails(id, mtype));
+            showDetailModal(details, mtype);
+          }catch(err){ console.warn('Failed to load details', err); }
         });
       }catch(err){ suggestions.innerHTML = '<div class="muted">Search failed</div>'; }
     }
