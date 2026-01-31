@@ -1,17 +1,17 @@
-# Sai’s Thursday
+# Nivi’s Thursday
 
-A premium, colorful, romantic web app for couples to discover, plan, and remember movie nights together. Designed as a private, real-time, visually stunning streaming-like experience for Sai.
+A premium, colorful, romantic web app for couples to discover, plan, and remember movie nights together. Designed as a private, real-time, visually stunning streaming-like experience for Dherru and Nivi.
 
 ## Features
 - Private shared room system (no login)
 - Real-time sync via Supabase
-- Role selection: “You” and “Sai”
+- Role selection: “Dherru” and “Nivi”
 - Add and save favorite movies/shows (TMDB API)
 - Personalized recommendations
 - Thursday voting system
 - Weekly countdown
 - Memory timeline
-- Secret romantic section for Sai
+- Secret romantic section for Nivi
 - Premium, vibrant, glassmorphism UI
 
 ## Tech Stack
@@ -37,4 +37,4 @@ A premium, colorful, romantic web app for couples to discover, plan, and remembe
 
 ---
 
-**Sai, this is our little world.**
+**Dherru & Nivi, this is our little world.**

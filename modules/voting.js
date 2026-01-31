@@ -1,4 +1,4 @@
-// Voting system for Sai’s Thursday
+// Voting system for Dherru & Nivi
 import { supabase } from './supabase.js';
 
 export async function voteForMovie(roomId, mediaId, role) {

@@ -1,4 +1,4 @@
-// Memory timeline for Sai’s Thursday
+// Memory timeline for Dherru & Nivi
 import { supabase } from './supabase.js';
 
 export async function saveMemory(roomId, media) {

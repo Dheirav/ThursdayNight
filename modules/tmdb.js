@@ -1,4 +1,4 @@
-// TMDB API functions for Sai’s Thursday
+// TMDB API functions for Dherru & Nivi
 import { TMDB_API_KEY } from './config.js';
 
 const TMDB_BASE = 'https://api.themoviedb.org/3';

@@ -1,4 +1,4 @@
-// Room system for Sai’s Thursday
+// Room system for Dherru & Nivi
 import { supabase } from './supabase.js';
 
 export function generateRoomId() {
@@ -7,7 +7,7 @@ export function generateRoomId() {
 
 export async function createRoom(role) {
   const roomId = generateRoomId();
-  await supabase.from('rooms').insert([{ id: roomId, created_at: new Date().toISOString(), role_you: role === 'You', role_sai: role === 'Sai' }]);
+  await supabase.from('rooms').insert([{ id: roomId, created_at: new Date().toISOString(), role_you: role === 'Dherru', role_sai: role === 'Nivi' }]);
   return roomId;
 }
 

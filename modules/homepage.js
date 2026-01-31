@@ -55,7 +55,16 @@ function showSkeleton(containerId, count=4){
 
 async function renderPosterGrid(containerId, items, opts = {}){
   const container = el(containerId);
+  if (!container) {
+    console.warn(`renderPosterGrid: container '${containerId}' not found`);
+    return;
+  }
   container.innerHTML = '';
+  if (!items || items.length === 0) {
+    const empty = document.createElement('div'); empty.className = 'empty-row'; empty.textContent = 'No items to show';
+    container.appendChild(empty);
+    return;
+  }
   items.forEach(i => container.appendChild(createPosterCard(i, opts)));
   // lazy-load newly added images
   try { observeLazyImages(container); } catch(e) { /* ignore */ }
@@ -134,7 +143,7 @@ async function renderRomanticSection(roomId, role){
   const container = el('romantic-panel');
   if (!container) return;
   container.innerHTML = '';
-  if (role !== 'Nivi') return; // secret only for Sai/Nivi
+  if (role !== 'Nivi') return; // secret only for Dherru/Nivi
   const messages = await getRomanticMessages(roomId);
   const card = document.createElement('div'); card.className='romantic-secret';
   const title = document.createElement('h3'); title.textContent = 'A Little Surprise For You'; card.appendChild(title);
@@ -166,18 +175,57 @@ function renderRoleSwitcher(currentRole='Dherru'){
     headerUser.appendChild(btn);
   });
   // small avatar at end
-  const avatar = document.createElement('img'); avatar.src='assets/user1.svg'; avatar.className='user-avatar'; avatar.alt='You';
+  const avatar = document.createElement('img'); avatar.src='assets/user1.svg'; avatar.className='user-avatar'; avatar.alt='Dherru';
   headerUser.appendChild(avatar);
 }
 
 // orchestrator
 export async function initHomepage(roomId='demo-room'){
   const role = sessionStorage.getItem('role') || 'Dherru';
+  // ensure basic page skeleton exists in #root so subsequent renderers find containers
+  const root = document.getElementById('root');
+  if (!root) {
+    console.warn('initHomepage: #root not found');
+    return;
+  }
+  root.innerHTML = `
+    <header class="hero main-title"> 
+      <div class="hero-inner">
+        <div class="main-brand">Dherru & Nivi</div>
+        <div class="main-user"></div>
+        <div class="countdown-timer"></div>
+      </div>
+    </header>
+    <main class="container">
+      <section class="row">
+        <h2>Your Favorites</h2>
+        <div id="user-favorites-grid" class="poster-grid"></div>
+      </section>
+      <section class="row">
+        <h2>Nivi's Favorites</h2>
+        <div id="nivi-favorites-grid" class="poster-grid"></div>
+      </section>
+      <section class="row">
+        <h2>Recommendations</h2>
+        <div id="recommendations-grid" class="poster-grid"></div>
+      </section>
+      <section class="row">
+        <h2>Final Picks</h2>
+        <div id="final-picks-grid" class="poster-grid"></div>
+      </section>
+      <section class="row">
+        <h2>Timeline</h2>
+        <div id="timeline-grid" class="timeline-grid"></div>
+      </section>
+      <aside id="romantic-panel"></aside>
+    </main>
+  `;
+
   renderRoleSwitcher(role);
   renderCountdown();
   // show skeletons while loading
   showSkeleton('user-favorites-grid',4);
-  showSkeleton('sai-favorites-grid',4);
+  showSkeleton('nivi-favorites-grid',4);
   showSkeleton('recommendations-grid',5);
   showSkeleton('final-picks-grid',3);
   showSkeleton('timeline-grid',4);
@@ -186,8 +234,8 @@ export async function initHomepage(roomId='demo-room'){
   const userFavs = await getFavorites(roomId, role);
   await renderPosterGrid('user-favorites-grid', userFavs, {type:'Favorite'});
   const partner = role === 'Dherru' ? 'Nivi' : 'Dherru';
-  const saiFavs = await getFavorites(roomId, partner);
-  await renderPosterGrid('sai-favorites-grid', saiFavs, {type:"Sai's Pick"});
+  const niviFavs = await getFavorites(roomId, partner);
+  await renderPosterGrid('nivi-favorites-grid', niviFavs, {type:"Nivi's Pick"});
   const recs = await getPersonalizedRecommendations(roomId, role);
   await renderPosterGrid('recommendations-grid', recs, {type:'Recommended'});
   await renderVotes(roomId);

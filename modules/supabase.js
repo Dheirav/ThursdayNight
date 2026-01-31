@@ -1,4 +1,4 @@
-// Supabase client setup for Sai’s Thursday
+// Supabase client setup for Dherru & Nivi
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 

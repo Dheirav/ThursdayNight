@@ -1,4 +1,4 @@
-// Favorites management for Sai’s Thursday
+// Favorites management for Dherru & Nivi
 import { supabase } from './supabase.js';
 
 export async function addFavorite(roomId, role, media) {

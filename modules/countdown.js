@@ -1,4 +1,4 @@
-// Countdown to next Thursday for Sai’s Thursday
+// Countdown to next Thursday for Dherru & Nivi
 export function getNextThursday() {
   const now = new Date();
   const day = now.getDay();

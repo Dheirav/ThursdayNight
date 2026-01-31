@@ -7,10 +7,10 @@ export function randomFrom(arr) {
 const phrases = [
   "This week feels cozy",
   "Something new for us today",
-  "Sai, I added something fresh for you",
+  "Nivi, I added something fresh for you",
   "Our Thursdays, our little tradition",
   "A cozy corner made for you",
-  "Sai, this space is ours"
+  "Nivi, this space is ours"
 ];
 
 const palettes = [

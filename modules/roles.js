@@ -1,4 +1,4 @@
-// Role selection for Sai’s Thursday
+// Role selection for Dherru & Nivi
 export function renderRoleSelection(onSelect) {
   const root = document.getElementById('root');
   root.innerHTML = `

@@ -1,4 +1,4 @@
-// UI rendering for Sai’s Thursday main features
+// UI rendering for Dherru & Nivi main features
 import { getFavorites, addFavorite } from './favorites.js';
 import { getPersonalizedRecommendations } from './recommendations.js';
 import { voteForMovie, getVotes } from './voting.js';
@@ -11,8 +11,8 @@ export async function renderDashboard(roomId, role) {
   const root = document.getElementById('root');
   root.innerHTML = `
     <div class="glass-panel">
-      <div class="gradient-title">Sai’s Thursday</div>
-      <div class="subtitle">For our Thursdays together, ${role === 'Sai' ? 'Sai' : 'you'}!</div>
+      <div class="gradient-title">Dherru & Nivi</div>
+      <div class="subtitle">For our Thursdays together, ${role === 'Nivi' ? 'Nivi' : 'Dherru'}!</div>
       <div id="countdown" class="countdown"></div>
       <div style="display:flex; gap:2rem; flex-wrap:wrap; justify-content:center;">
         <div id="favorites-panel"></div>
@@ -20,7 +20,7 @@ export async function renderDashboard(roomId, role) {
       </div>
       <div id="voting-panel"></div>
       <div id="timeline-panel"></div>
-      ${role === 'Sai' ? '<div id="romantic-panel"></div>' : ''}
+      ${role === 'Nivi' ? '<div id="romantic-panel"></div>' : ''}
     </div>
   `;
   renderCountdown();
@@ -28,7 +28,7 @@ export async function renderDashboard(roomId, role) {
   renderRecommendations(roomId, role);
   renderVoting(roomId, role);
   renderTimeline(roomId);
-  if (role === 'Sai') renderRomantic(roomId);
+  if (role === 'Nivi') renderRomantic(roomId);
 }
 
 function renderCountdown() {
@@ -41,12 +41,12 @@ function renderCountdown() {
 }
 
 async function renderFavorites(roomId) {
-  const youFavs = await getFavorites(roomId, 'You');
-  const saiFavs = await getFavorites(roomId, 'Sai');
+  const youFavs = await getFavorites(roomId, 'Dherru');
+  const saiFavs = await getFavorites(roomId, 'Nivi');
   document.getElementById('favorites-panel').innerHTML = `
     <div style="display:flex; gap:2rem;">
-      <div><h3>You</h3>${renderPosterGrid(youFavs)}</div>
-      <div><h3>Sai</h3>${renderPosterGrid(saiFavs)}</div>
+      <div><h3>Dherru</h3>${renderPosterGrid(youFavs)}</div>
+      <div><h3>Nivi</h3>${renderPosterGrid(saiFavs)}</div>
     </div>
     <div style="margin-top:1rem;">
       <input id="fav-input" placeholder="Search for a movie..." style="padding:0.5rem; border-radius:1rem; border:none; width:60%;" autocomplete="off" aria-label="Search movies" />

@@ -1,4 +1,4 @@
-// Recommendations for Sai’s Thursday
+// Recommendations for Dherru & Nivi
 import { getTMDBRecommendations } from './tmdb.js';
 import { getFavorites } from './favorites.js';
 

@@ -1,4 +1,4 @@
-// Secret romantic section for Sai’s Thursday
+// Secret romantic section for Dherru & Nivi
 import { supabase } from './supabase.js';
 
 export async function addRomanticMessage(roomId, message) {

@@ -1,4 +1,4 @@
-// Sai’s Thursday – Main App Entry
+// Dherru & Nivi – Main App Entry
 import { renderHome } from './modules/home.js';
 import { renderRoleSelection } from './modules/roles.js';
 import { generateRoomId, getRoomUrl } from './modules/room.js';

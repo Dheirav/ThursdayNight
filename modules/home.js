@@ -1,4 +1,4 @@
-// Home page rendering for Sai’s Thursday
+// Home page rendering for Dherru & Nivi
 import { renderDashboard } from './ui.js';
 
 export function renderHome() {
@@ -11,7 +11,7 @@ export function renderHome() {
     const root = document.getElementById('root');
     root.innerHTML = `
       <div class="glass-panel">
-        <div class="gradient-title">Sai’s Thursday</div>
+        <div class="gradient-title">Dherru & Nivi</div>
         <div class="subtitle">Our little world to relax, laugh, and feel close</div>
         <div style="text-align:center; margin:2rem 0;">
           <button id="start-btn" class="start-btn">Start Our Movie Night</button>
