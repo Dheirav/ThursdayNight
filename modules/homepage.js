@@ -1,5 +1,6 @@
 // modules/homepage.js
 import { initTheme, pickFeatured } from './theme.js';
+import { observeLazyImages } from './lazy.js';
 import { getFavorites } from './favorites.js';
 import { getPersonalizedRecommendations } from './recommendations.js';
 import { getVotes, voteForMovie } from './voting.js';
@@ -22,7 +23,7 @@ function createPosterCard(item, options = {}){
   wrapper.className = 'poster-card';
 
   const img = poster ? document.createElement('img') : document.createElement('div');
-  if (poster){ img.setAttribute('loading','lazy'); img.src = `https://image.tmdb.org/t/p/w300${poster}`; img.alt = title; }
+  if (poster){ img.className = 'lazy-img'; img.setAttribute('data-src', `https://image.tmdb.org/t/p/w300${poster}`); img.alt = title; }
   else { img.className = 'no-image'; img.textContent = 'No Image'; }
   wrapper.appendChild(img);
 
@@ -56,6 +57,8 @@ async function renderPosterGrid(containerId, items, opts = {}){
   const container = el(containerId);
   container.innerHTML = '';
   items.forEach(i => container.appendChild(createPosterCard(i, opts)));
+  // lazy-load newly added images
+  try { observeLazyImages(container); } catch(e) { /* ignore */ }
 }
 
 async function renderHeroFeatured(roomId, role){
@@ -108,6 +111,7 @@ async function renderVotes(roomId){
     if (v.winner) card.classList.add('winning');
     container.appendChild(card);
   });
+  try { observeLazyImages(container); } catch(e) { }
 }
 
 async function renderTimeline(roomId){
@@ -116,11 +120,14 @@ async function renderTimeline(roomId){
   container.innerHTML = '';
   memories.forEach(m => {
     const item = document.createElement('div'); item.className='timeline-item';
-    const img = document.createElement('img'); img.src = m.poster_path ? `https://image.tmdb.org/t/p/w200${m.poster_path}` : '';
-    img.alt = m.title; img.className='timeline-poster'; item.appendChild(img);
+    const img = document.createElement('img');
+    if (m.poster_path) { img.className = 'lazy-img timeline-poster'; img.setAttribute('data-src', `https://image.tmdb.org/t/p/w200${m.poster_path}`); }
+    else { img.className = 'timeline-poster'; }
+    img.alt = m.title; item.appendChild(img);
     const date = document.createElement('div'); date.className='timeline-date'; date.textContent = new Date(m.date).toLocaleDateString(); item.appendChild(date);
     container.appendChild(item);
   });
+  try { observeLazyImages(container); } catch(e) { }
 }
 
 async function renderRomanticSection(roomId, role){

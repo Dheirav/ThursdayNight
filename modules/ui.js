@@ -5,6 +5,7 @@ import { voteForMovie, getVotes } from './voting.js';
 import { getCountdownString } from './countdown.js';
 import { getMemories } from './timeline.js';
 import { getRomanticMessages, revealMessage } from './romantic.js';
+import { observeLazyImages } from './lazy.js';
 
 export async function renderDashboard(roomId, role) {
   const root = document.getElementById('root');
@@ -68,10 +69,12 @@ async function renderFavorites(roomId) {
       }
       suggestions.innerHTML = results.slice(0,6).map(movie => `
         <div class="fav-suggestion" role="button" tabindex="0" aria-label="Select ${movie.title}" style="padding:0.5rem; cursor:pointer; display:flex; align-items:center; gap:1rem;" data-id="${movie.id}" data-title="${movie.title}" data-poster="${movie.poster_path}" data-vote="${movie.vote_average}">
-          <img loading="lazy" src="https://image.tmdb.org/t/p/w92${movie.poster_path}" style="width:32px; height:48px; object-fit:cover; border-radius:0.5rem;" />
+          <img class="lazy-img" data-src="https://image.tmdb.org/t/p/w92${movie.poster_path}" style="width:32px; height:48px; object-fit:cover; border-radius:0.5rem;" />
           <span>${movie.title} (${movie.release_date ? movie.release_date.slice(0,4) : ''})</span>
         </div>
       `).join('');
+      // activate lazy loader for suggestion thumbnails
+      try { observeLazyImages(suggestions); } catch(e) {}
       Array.from(document.getElementsByClassName('fav-suggestion')).forEach(el => {
         el.onclick = async () => {
           const id = el.getAttribute('data-id');
