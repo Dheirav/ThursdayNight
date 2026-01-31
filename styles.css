@@ -1,3 +1,227 @@
+/* Hero background and overlay */
+.main-hero-bg {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: radial-gradient(ellipse at top left, #ffb6b9 0%, #cdb4f6 60%, #181818 100%), url('assets/hearts-bg.png');
+  background-size: cover;
+  z-index: 0;
+}
+.main-hero-overlay {
+  position: relative;
+  width: 100vw;
+  min-height: 100vh;
+  background: linear-gradient(180deg, rgba(24,24,24,0.7) 0%, rgba(255,182,185,0.15) 100%);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Header and navigation */
+.main-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 3rem 0 3rem;
+}
+.main-nav {
+  display: flex;
+  gap: 2rem;
+}
+.nav-link {
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 500;
+  text-decoration: none;
+  padding-bottom: 0.2rem;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+.nav-link:hover {
+  border-bottom: 2px solid #fff6b7;
+}
+.main-user {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff6b7;
+  object-fit: cover;
+  border: 2px solid #ffb6b9;
+}
+.user-label {
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+.user-heart {
+  color: #ffb6b9;
+  font-size: 1.5rem;
+  margin-left: 0.2rem;
+}
+
+/* Main title and countdown */
+.main-title {
+  text-align: center;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+.countdown-box {
+  background: rgba(255,182,185,0.18);
+  border-radius: 1.5rem;
+  box-shadow: 0 0 24px #ffb6b9;
+  display: inline-block;
+  padding: 1.2rem 2.5rem;
+  margin-top: 1.2rem;
+}
+.countdown-label {
+  color: #fff6b7;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-right: 1rem;
+}
+.countdown-timer {
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 12px #ffb6b9;
+}
+
+/* Section rows */
+.main-section {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  margin-top: 2rem;
+  z-index: 2;
+}
+.favorites-row {
+  display: flex;
+  gap: 2.5rem;
+  justify-content: space-between;
+  margin-bottom: 2.5rem;
+}
+.favorites-col {
+  flex: 1;
+}
+.section-title {
+  color: #fff6b7;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+.recommend-row, .final-row {
+  margin-bottom: 2.5rem;
+}
+.recommend-row .section-title, .final-row .section-title {
+  text-align: left;
+}
+.vote-btn {
+  background: linear-gradient(90deg, #ffb6b9, #cdb4f6);
+  color: #fff;
+  border: none;
+  border-radius: 1.2rem;
+  padding: 0.6rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  box-shadow: 0 2px 12px #ffb6b9;
+  cursor: pointer;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+}
+.vote-btn:hover {
+  background: linear-gradient(90deg, #cdb4f6, #ffb6b9);
+  box-shadow: 0 4px 24px #cdb4f6;
+  transform: scale(1.07);
+}
+
+/* Timeline */
+.timeline-row {
+  margin-top: 2.5rem;
+  text-align: center;
+}
+.timeline-title {
+  color: #fff6b7;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+.timeline {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  margin-top: 1rem;
+}
+.timeline-item {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 500;
+  background: rgba(255,182,185,0.18);
+  border-radius: 1rem;
+  padding: 0.5rem 1.2rem;
+  box-shadow: 0 0 12px #ffb6b9;
+}
+
+/* Poster card polish and overlays */
+.poster-card { position:relative; overflow:hidden; border-radius:1rem; }
+.vote-overlay {
+  position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
+  background: linear-gradient(90deg,var(--theme-accent),var(--theme-accent-2));
+  border:none; color:#fff; padding:0.5rem 1rem; border-radius:999px; cursor:pointer;
+  box-shadow: 0 6px 18px var(--theme-accent-glow);
+}
+.vote-badge {
+  position:absolute; top:8px; right:8px; background:var(--theme-accent); color:#222; padding:0.25rem 0.5rem; border-radius:8px; font-weight:700; font-size:0.85rem;
+  box-shadow:0 4px 12px var(--theme-accent-glow);
+}
+.winning { box-shadow: 0 12px 40px rgba(255,200,200,0.25), 0 0 40px var(--theme-accent-glow); transform:scale(1.03); }
+
+/* timeline item style */
+.timeline-item { display:flex; flex-direction:column; align-items:center; gap:0.5rem; background:transparent; box-shadow:none; padding:0; }
+.timeline-poster { width:110px; height:160px; object-fit:cover; border-radius:0.8rem; box-shadow:0 6px 18px rgba(0,0,0,0.4); }
+.timeline-date { color:#fff; font-weight:600; text-shadow:0 2px 6px rgba(0,0,0,0.5); }
+
+/* Romantic secret */
+.romantic-secret { background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border-radius:1rem; padding:1rem; box-shadow:0 8px 30px rgba(0,0,0,0.4); }
+.romantic-secret h3 { color:var(--theme-accent); margin:0 0 0.6rem 0; }
+.romantic-list { display:flex; flex-direction:column; gap:0.6rem; }
+.rom-msg { background:rgba(255,255,255,0.02); padding:0.6rem; border-radius:0.8rem; color:#fff; display:flex; justify-content:space-between; align-items:center; }
+.reveal-btn { background:var(--theme-accent); border:none; color:#222; padding:0.3rem 0.6rem; border-radius:0.6rem; cursor:pointer; }
+
+/* Hero background area (fine-tune) */
+.main-title { padding:2.2rem; border-radius:1rem; width:100%; max-width:1100px; margin-bottom:1.2rem; color:#fff; background-size:cover; background-position:center; }
+.main-title .gradient-title { font-size:3.5rem; margin:0; }
+
+/* small responsive tweaks */
+@media (max-width:900px){
+  .favorites-row{ flex-direction:column; }
+  .main-header{ padding:1rem 1.2rem; }
+  .nav-link{ font-size:0.95rem; }
+  .main-title .gradient-title{ font-size:2.4rem; }
+}
+
+/* Role chips in header */
+.main-user { display:flex; align-items:center; gap:0.6rem; }
+.role-chip { background: rgba(255,255,255,0.06); color:#fff; border:1px solid transparent; padding:0.4rem 0.8rem; border-radius:999px; cursor:pointer; font-weight:600; }
+.role-chip.active { background: var(--theme-accent); color:#222; box-shadow:0 6px 18px var(--theme-accent-glow); transform:translateY(-1px); }
+.role-chip:hover { filter:brightness(1.05); }
+
+/* Loading skeletons and spinner */
+.skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); border-radius:0.8rem; overflow:hidden; position:relative; }
+.skeleton::after { content:''; position:absolute; left:-100%; top:0; height:100%; width:100%; background:linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent); animation: shimmer 1.6s infinite; }
+@keyframes shimmer { to { left:100%; } }
+.skeleton-poster { width:200px; height:260px; border-radius:1rem; background:#2a2a2a; }
+.skeleton-line { height:12px; width:70%; margin:0.6rem auto; border-radius:8px; background:#2a2a2a; }
+.spinner { border:4px solid rgba(255,255,255,0.06); border-top:4px solid var(--theme-accent); border-radius:50%; width:36px; height:36px; animation:spin 1s linear infinite; margin:auto; }
+@keyframes spin { to { transform:rotate(360deg); } }
 /* Sai’s Thursday – Vibrant, romantic, glassmorphism UI */
 :root {
   --primary-gradient: linear-gradient(135deg, #ffb6b9 0%, #fcdffb 100%);
@@ -87,13 +311,16 @@ body {
 /* Poster card grid styles */
 
 
+
 .poster-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 2.5rem;
   width: 100%;
   margin: 2rem 0;
+  justify-items: center;
 }
+
 
 
 .poster-card {
@@ -104,8 +331,8 @@ body {
   border-radius: 1rem;
   overflow: hidden;
   position: relative;
-  width: 180px;
-  min-height: 270px;
+  width: 200px;
+  height: 320px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -117,15 +344,15 @@ body {
   z-index: 2;
 }
 .poster-card img {
-  width: 100%;
-  height: 230px;
+  width: 200px;
+  height: 260px;
   object-fit: cover;
   border-radius: 1rem 1rem 0 0;
   background: #333;
 }
 .poster-card .no-image {
-  height: 230px;
-  width: 100%;
+  height: 260px;
+  width: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -140,12 +367,17 @@ body {
   margin: 0.7rem 0 0.2rem 0;
   text-align: center;
   text-shadow: 0 2px 8px #111;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .poster-card .card-type {
   font-size: 0.95em;
   color: #e50914;
   margin-bottom: 0.2rem;
   text-align: center;
+  width: 100%;
 }
 .poster-card .card-rating {
   font-size: 0.95em;
@@ -153,6 +385,7 @@ body {
   margin-bottom: 0.5rem;
   text-align: center;
   text-shadow: 0 2px 8px #e50914;
+  width: 100%;
 }
 
 

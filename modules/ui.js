@@ -48,21 +48,18 @@ async function renderFavorites(roomId) {
       <div><h3>Sai</h3>${renderPosterGrid(saiFavs)}</div>
     </div>
     <div style="margin-top:1rem;">
-      <input id="fav-input" placeholder="Search for a movie..." style="padding:0.5rem; border-radius:1rem; border:none; width:60%;" autocomplete="off" />
+      <input id="fav-input" placeholder="Search for a movie..." style="padding:0.5rem; border-radius:1rem; border:none; width:60%;" autocomplete="off" aria-label="Search movies" />
       <div id="fav-suggestions" style="background:rgba(255,255,255,0.9); border-radius:1rem; box-shadow:0 2px 8px rgba(0,0,0,0.08); position:relative; z-index:10;"></div>
     </div>
   `;
   const input = document.getElementById('fav-input');
   const suggestions = document.getElementById('fav-suggestions');
   let lastQuery = '';
-  input.addEventListener('input', async (e) => {
-    const query = input.value.trim();
-    if (!query || query === lastQuery) {
-      suggestions.innerHTML = '';
-      return;
-    }
-    lastQuery = query;
-    suggestions.innerHTML = '<div style="padding:0.5rem;">Searching...</div>';
+
+  function debounce(fn, wait = 300){ let t; return (...args) => { clearTimeout(t); t = setTimeout(()=>fn(...args), wait); }; }
+
+  async function doSearch(query){
+    suggestions.innerHTML = '<div style="padding:0.5rem;"><div class="spinner"></div></div>';
     try {
       const { results } = await import('./tmdb.js').then(m => m.searchTMDB(query, 'movie'));
       if (!results || !results.length) {
@@ -70,8 +67,8 @@ async function renderFavorites(roomId) {
         return;
       }
       suggestions.innerHTML = results.slice(0,6).map(movie => `
-        <div class="fav-suggestion" style="padding:0.5rem; cursor:pointer; display:flex; align-items:center; gap:1rem;" data-id="${movie.id}" data-title="${movie.title}" data-poster="${movie.poster_path}" data-vote="${movie.vote_average}">
-          <img src="https://image.tmdb.org/t/p/w92${movie.poster_path}" style="width:32px; height:48px; object-fit:cover; border-radius:0.5rem;" />
+        <div class="fav-suggestion" role="button" tabindex="0" aria-label="Select ${movie.title}" style="padding:0.5rem; cursor:pointer; display:flex; align-items:center; gap:1rem;" data-id="${movie.id}" data-title="${movie.title}" data-poster="${movie.poster_path}" data-vote="${movie.vote_average}">
+          <img loading="lazy" src="https://image.tmdb.org/t/p/w92${movie.poster_path}" style="width:32px; height:48px; object-fit:cover; border-radius:0.5rem;" />
           <span>${movie.title} (${movie.release_date ? movie.release_date.slice(0,4) : ''})</span>
         </div>
       `).join('');
@@ -92,10 +89,22 @@ async function renderFavorites(roomId) {
           suggestions.innerHTML = '';
           renderFavorites(roomId);
         };
+        el.onkeypress = (ev) => { if (ev.key === 'Enter') el.click(); };
       });
     } catch (err) {
-      suggestions.innerHTML = '<div style="padding:0.5rem; color:#c00;">Error searching TMDB.</div>';
+      suggestions.innerHTML = `<div style="padding:0.5rem; color:#c00;">Error searching TMDB. <button id="retry-search">Retry</button></div>`;
+      const retry = document.getElementById('retry-search');
+      if (retry) retry.onclick = () => doSearch(query);
     }
+  }
+
+  const deb = debounce(doSearch, 350);
+  input.addEventListener('input', (e) => {
+    const query = input.value.trim();
+    if (!query) { suggestions.innerHTML = ''; lastQuery = ''; return; }
+    if (query === lastQuery) return;
+    lastQuery = query;
+    deb(query);
   });
 }
 
