@@ -1,22 +1,79 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nivi’s Thursday</title>
-  <meta name="description" content="Nivi’s Thursday – Our little world to relax, laugh, and feel close. A private, romantic movie night planner for couples." />
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="icon" href="assets/favicon.svg" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Nivi's Thursday — Private Movie Night</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%239b5cff'/%3E%3Ctext x='50' y='65' font-size='60' text-anchor='middle' fill='white' font-family='Arial'%3EN%3C/text%3E%3C/svg%3E">
 </head>
 <body>
-  <div class="glass-panel" style="max-width:600px; margin-top:1rem; text-align:center;">
-    <h1 class="gradient-title">Nivi’s Thursday</h1>
-    <div class="subtitle">Our private, romantic movie night planner for couples</div>
-    <p style="font-size:1.15rem; color:#f5f5f5; margin-bottom:2rem;">Relax, laugh, and feel close. Discover, vote, and remember your favorite moments together.</p>
-    <a href="#" class="start-btn" style="font-size:1.2rem; padding:1rem 2.5rem; margin-top:1.5rem;">Get Started</a>
-    <div style="margin-top:2.5rem; font-size:0.95rem; color:#b8b8b8;">Powered by TMDB & Supabase</div>
+  <div id="app" class="app-shell">
+    <div id="role-screen" class="role-screen-initial"></div>
+    <div id="home-screen" hidden style="display:none!important;visibility:hidden;opacity:0">
+      <header class="hero">
+        <h1 class="hero-title">Thursday Movie Night</h1>
+        <p class="hero-subtitle">Our cozy little cinema</p>
+      </header>
+
+      <section class="countdown-card">
+        <h2>Next Thursday In</h2>
+        <div class="countdown-grid">
+          <div><span id="days">0</span><label>Days</label></div>
+          <div><span id="hours">0</span><label>Hours</label></div>
+          <div><span id="minutes">0</span><label>Minutes</label></div>
+          <div><span id="seconds">0</span><label>Seconds</label></div>
+        </div>
+      </section>
+
+      <nav class="tabs">
+        <button class="tab active" data-tab="home">Home</button>
+        <button class="tab" data-tab="discover">Discover</button>
+        <button class="tab" data-tab="vote">Vote</button>
+        <button class="tab" data-tab="timeline">Timeline</button>
+      </nav>
+
+      <main class="tab-content">
+        <section id="home" class="tab-panel active">
+          <h3>Your Favorites</h3>
+          <div class="dual-grid">
+            <div>
+              <h4>Dherru's Picks</h4>
+              <div id="fav-dherru" class="movie-grid"></div>
+            </div>
+            <div>
+              <h4>Nivi's Picks</h4>
+              <div id="fav-nivi" class="movie-grid"></div>
+            </div>
+          </div>
+          <h3>A Choice For Us Both</h3>
+          <div id="suggestions-preview" class="movie-grid"></div>
+        </section>
+
+        <section id="discover" class="tab-panel">
+          <h3>Discover</h3>
+          <form id="search-form" class="search-form" onsubmit="event.preventDefault();">
+            <input id="search-input" class="search-input" placeholder="Search by title, actor, or director" autocomplete="off">
+            <button type="button" class="btn" id="search-btn">Search</button>
+          </form>
+          <div class="search-status muted" aria-live="polite"></div>
+          <div id="search-results" class="movie-grid"></div>
+        </section>
+
+        <section id="vote" class="tab-panel">
+          <h3>Suggested For This Thursday</h3>
+          <div id="vote-grid" class="movie-grid"></div>
+          <div id="voting-result" class="voting-result"></div>
+        </section>
+
+        <section id="timeline" class="tab-panel">
+          <h3>Movie Nights Timeline</h3>
+          <div id="timeline-list" class="timeline-list"></div>
+        </section>
+      </main>
+    </div>
   </div>
-  <div id="root"></div>
-  <script type="module" src="modules/homepage.js"></script>
+
+  <script type="module" src="./app.js"></script>
 </body>
 </html>

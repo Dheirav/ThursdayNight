@@ -1,32 +1,123 @@
-// Favorites management for Dherru & Nivi
+// Favorites table helpers
+// - Implements add/remove/get and realtime subscription for `favorites`.
+// - All queries are scoped by `room_id` to enforce privacy.
+
 import { supabase } from './supabase.js';
 
-export async function addFavorite(roomId, role, media) {
-  // tolerate different shapes from callers
-  const media_id = media?.id || media?.media_id || media?.mediaId || null;
-  const media_type = media?.media_type || media?.mediaType || media?.type || 'movie';
-  const title = media?.title || media?.name || media?.title_text || '';
-  const poster = media?.poster_path || media?.poster || media?.image || null;
-  const rating = media?.vote_average || media?.rating || null;
+/**
+ * Add a favorite if it doesn't already exist for the same room + media.
+ * @param {string} room_id
+ * @param {string} role - "Dherru" or "Nivi"
+ * @param {object} media - { media_id, media_type, title, poster, rating }
+ * @returns {object} inserted record
+ */
+export async function addFavorite(room_id, role, media){
+  if(!room_id) throw new Error('room_id required');
+  if(!media || !media.media_id || !media.media_type) throw new Error('media.media_id and media.media_type required');
 
-  try{
-    const payload = [{ room_id: roomId, role, media_id, media_type, title, poster, rating }];
-    const { data, error } = await supabase.from('favorites').insert(payload).select();
-    if (error) {
-      console.error('addFavorite error', error);
-      return { error };
+  // Prevent duplicates: check existing row for this room + media
+  const { data: existing, error: selErr } = await supabase
+    .from('favorites')
+    .select('*')
+    .eq('room_id', room_id)
+    .eq('media_id', media.media_id)
+    .eq('media_type', media.media_type)
+    .maybeSingle();
+
+  if(selErr) throw selErr;
+  if(existing) return existing;
+
+  // Insert a new favorite. Use explicit fields matching the schema.
+  const payload = {
+    room_id,
+    role,
+    media_id: media.media_id,
+    media_type: media.media_type,
+    title: media.title || null,
+    poster: media.poster || null,
+    rating: (typeof media.rating === 'number') ? media.rating : null
+  };
+
+  const { data: inserted, error: insErr } = await supabase
+    .from('favorites')
+    .insert(payload)
+    .select()
+    .single();
+
+  if(insErr) {
+    // If a race caused a duplicate, return the existing row if possible
+    if(insErr.status === 409){
+      const { data: existing2 } = await supabase
+        .from('favorites')
+        .select('*')
+        .eq('room_id', room_id)
+        .eq('media_id', media.media_id)
+        .eq('media_type', media.media_type)
+        .maybeSingle();
+      return existing2;
     }
-    return { data };
-  }catch(err){
-    console.error('addFavorite unexpected error', err);
-    return { error: err };
+    throw insErr;
   }
+
+  return inserted;
 }
 
-export async function getFavorites(roomId, role) {
-  try{
-    const { data, error } = await supabase.from('favorites').select('*').eq('room_id', roomId).eq('role', role);
-    if (error) { console.error('getFavorites error', error); return []; }
-    return data || [];
-  }catch(err){ console.error('getFavorites unexpected', err); return []; }
+/**
+ * Remove favorite by composite key (room_id + media_id + media_type)
+ * @returns {boolean} true if deleted
+ */
+export async function removeFavorite(room_id, media_id, media_type){
+  if(!room_id) throw new Error('room_id required');
+  const { data, error } = await supabase
+    .from('favorites')
+    .delete()
+    .eq('room_id', room_id)
+    .eq('media_id', media_id)
+    .eq('media_type', media_type);
+
+  if(error) throw error;
+  return Array.isArray(data) ? data.length > 0 : !!data;
+}
+
+/**
+ * Get all favorites for a room
+ */
+export async function getFavorites(room_id){
+  if(!room_id) return [];
+  const { data, error } = await supabase
+    .from('favorites')
+    .select('*')
+    .eq('room_id', room_id)
+    .order('id', { ascending: false });
+
+  if(error) throw error;
+  return data || [];
+}
+
+/**
+ * Subscribe to realtime favorites changes for a room.
+ * Calls `callback({ event, record })` on INSERT and DELETE.
+ * Returns an object with `unsubscribe()` to stop listening.
+ */
+export function subscribeToFavorites(room_id, callback){
+  if(!room_id) throw new Error('room_id required for subscription');
+
+  // Use a dedicated channel name per room for clarity
+  const channel = supabase.channel(`public:favorites:${room_id}`);
+
+  // Listen for inserts scoped to this room
+  channel.on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'favorites', filter: `room_id=eq.${room_id}` }, (payload) => {
+    try{ callback({ event: 'INSERT', record: payload.new }); }catch(e){ console.error(e); }
+  });
+
+  // Listen for deletes scoped to this room
+  channel.on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'favorites', filter: `room_id=eq.${room_id}` }, (payload) => {
+    try{ callback({ event: 'DELETE', record: payload.old }); }catch(e){ console.error(e); }
+  });
+
+  channel.subscribe();
+
+  return {
+    unsubscribe: () => channel.unsubscribe()
+  };
 }
